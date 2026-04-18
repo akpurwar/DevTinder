@@ -2,15 +2,81 @@ const express = require("express");
 
 const app  = express();
 
-app.use("/test" , (req, res)=> {// request handler
-    res.send("hello from server ")  
+const {adminAuth, userAuth} = require("./middleware/auth");
+
+app.get("/user/login" , (req,res,next)=>{
+    res.send("loggin")
 })
 
-app.use("/hell" , (req, res)=> {// request handler
-    res.send("hell from server ")  
+app.get("/user" , userAuth, (req,res,next)=>{
+    res.send("data fetched")
 })
 
-app.listen(8800, ()=> {
-    console.log("server is sucessfully running on port 3000");
+
+
+app.get("/admin/data" ,adminAuth, (req,res,next)=>{
+    res.send("data get")
+})
+
+app.get("/admin/delete", adminAuth ,(req,res,next)=> {
+    try{
+    res.send("delete data")
+    }catch(err){
+     res.send("something went wrong")
+    }
+    
+    
+})
+
+// app.use("/",(err,req,res,next)=> {
+//     if(err){
+//         res.status(500).send("something went wrong");
+//     }
+
+// })
+
+// app.get("/user", (req, res) => {
+//  console.log(req.query);
+//  res.send({ firstName: "Akshay", lastName: "Saini" });
+// });
+
+// app.get("/user/:userId/:name", (req, res) => {
+//  console.log(req.params);
+//  res.send({ firstName: "Akshay", lastName: "Saini" });
+// });
+
+// app.get("/ab?c", (req, res) => {
+//  res.send({ firstName: "Akshay", lastName: "Saini" });
+// });
+
+// app.get("/ab+c", (req, res) => {
+//  res.send({ firstName: "ag", lastName: "Saini" });
+// });
+
+// app.get("/*fly$/", (req, res) => {
+//  res.send({ firstName: "akash", lastName: "purwar" });
+// });
+
+
+// app.use("/user",(req,res,next)=> {
+//     next();
+    
+// },[(req,res,next)=> {
+//      next();
+//     //res.send("response2")
+// },
+// (req,res,next)=> {
+//     next();
+//     //res.send("response3")
+// }],
+// (req,res)=> {
+//     res.send("response4")
+// })
+
+
+
+
+app.listen(8800, () => {
+    console.log("server is successfully running on port 8800");
 });
 
