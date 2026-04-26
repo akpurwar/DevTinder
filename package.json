@@ -13,6 +13,7 @@
   "author": "Akash Purwar",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.22.1"
+    "express": "^4.22.1",
+    "mongoose": "^9.4.1"
   }
 }
