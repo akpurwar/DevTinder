@@ -1,29 +1,21 @@
 const express = require("express");
- const connectDB = require('./config/database');
+const connectDB = require('./config/database');
+const cookieParser = require("cookie-parser");
+const app = express();
 
- const User = require('./models/user')
+app.use(express.json())
+app.use(cookieParser())
 
-const app  = express();
+const  authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const userRouter = require("./routes/user");
+const requestRouter = require("./routes/request");
 
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", userRouter);
+app.use("/", requestRouter);
 
-app.post("/signup", async(req,res)=> {
-
-    const user = new User( {
-        firstName:"akash",
-        lastName:"purwar",
-        email:"pur@gm.com",
-        age:29,
-        gender:"male"
-    })
-   
-    try{
-        await user.save();
-        res.send("saved data sucess")
-    }catch(err) {
-        console.error("Data not saved ", err.message)
-    }
-
-})
 
 
 connectDB().then(()=> {
