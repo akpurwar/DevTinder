@@ -37,6 +37,14 @@ const userSchema = mongoose.Schema({
             values: ["male", "female" , "other"],
             message: `{VALUE} is not of the correct status type`
         }
+    }, photoUrl: {
+      type: String,
+      default: "https://geographyandyou.com/images/user-profile.png",
+      validate(value) {
+        if (!validator.isURL(value)) {
+          throw new Error("Invalid Photo URL: " + value);
+        }
+      }
     }
 
 },{timestamps: true })

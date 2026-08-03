@@ -23,7 +23,14 @@ const user = require("../models/user");
  function validateEditProfile(req)
  {
 
-     const includedfields = ["firstName", "lastName","gender"];
+     const includedfields = ["firstName",
+    "lastName",
+    "emailId",
+    "photoUrl",
+    "gender",
+    "age",
+    "about",
+    "skills"]
 
      let isAllowedEdit = Object.keys(req.body).every((field)=> includedfields.includes(field));
 

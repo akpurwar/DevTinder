@@ -40,55 +40,66 @@ userRouter.delete("/user" ,async(req , res)=> {
 })
 
 
-userRouter.get("user/feed" , userAuth,async(req , res)=> {
-    try{
+userRouter.get("/user/feed", userAuth, async (req, res) => {
+  try {
+    let limit = parseInt(req.query.limit) || 10;
+    let page = parseInt(req.query.page) || 1;
 
-      let limit = parseInt(req.query.limit)|| 1;
-      let page = parseInt(req.query.page) || 10;
-      limit = limit > 50 ? 50 : limit;
-      skip = (page-1)*limit;
+    limit = limit > 50 ? 50 : limit;
+    const skip = (page - 1) * limit;
 
-      const loggedinuser = req.user;
+    const loggedinuser = req.user;
 
-      const connectionRequest = await ConnectionRequest.find({
-        $or:[
-          {toUserId : loggedinuser._id},
-          {fromUserId: loggedinuser._id}
-        ]
-      }).select({fromUserId,toUserId}).populate("firstName lastName")
+    const connectionRequest = await ConnectionRequest.find({
+      $or: [
+        { toUserId: loggedinuser._id },
+        { fromUserId: loggedinuser._id }
+      ]
+    }).select("fromUserId  toUserId");
 
-      const hiderUsers = new Set();
+    console.log(connectionRequest)
 
-      connectionRequest.forEach(req => {
-        hiderUsers.add(req.fromUserId.toStirng());
-        hiderUsers.add(req.toUserId.toStirng());
-      });
+    const hiderUsers = new Set();
 
-      const users = User.find({
-        $and:[
-        {_id: {$nin : Array.from(hiderUsers)}}, 
-        {_id :{$ne: loggedinuser._id}}]
-    }).skip(skip).limit(limit);
-   
-      res.send(users);
-    }catch(err){
-      res.status(404).send("Something went wrong")
-    }
-   
+    connectionRequest.forEach((request) => {
+      hiderUsers.add(request.fromUserId.toString());
+      hiderUsers.add(request.toUserId.toString());
+    });
+
+    console.log(hiderUsers)
+
+    const users = await User.find({
+      $and: [
+        { _id: { $nin: Array.from(hiderUsers) } },
+        { _id: { $ne: loggedinuser._id } }
+      ]
+    }).select("firstName lastName").skip(skip).limit(limit);
+
+    console.log(users)
+
+   res.json({ data: users });
+  } catch (err) {
+    return res.status(404).send("Something went wrong");
+  }
 })
+
 
 
 userRouter.get("/user/requests/recieved", userAuth , async(req, res)=> {
   try{
-     const loggedinuser = req.user;
+     const loggedInUser = req.user;
 
-     const connectionRequest  = await ConnectionRequest.find({
-      toUserId : loggedinuser._id,
-      status : "interested"
-     }).populate("fromUserId", "firstName lastName");
+     console.log(loggedInUser)
 
-     res.send(connectionRequest);
+      const connectionRequests = await ConnectionRequest.find({
+      toUserId: loggedInUser._id,
+      status: "interested",
+    }).populate("fromUserId", ["firstName", "lastName"]);
 
+    res.json({
+      message: "Data fetched successfully",
+      data: connectionRequests,
+    });
     }catch(err){
       res.status(404).send("Something went wrong")
     }
@@ -100,21 +111,21 @@ userRouter.get("/user/requests/recieved", userAuth , async(req, res)=> {
 userRouter.get("/user/connections", userAuth , async(req, res)=> {
   try{
      const loggedinuser = req.user;
+     console.log(loggedinuser)
 
      const connectionRequest  = await ConnectionRequest.find({
       $or: [
         {toUserId:loggedinuser._id , status: "accepted"},
         {fromUserId: loggedinuser._id , status:"accepted"}
       ]
-     }).populate("fromUserId", "firstName lastName").populate("toUserId", "firstName" , "lastName")
-
-     const data = connectionRequest.map((item)=> {
-
-       if(item.toUserId._id.toStirng() == loggedinuser._id.toStirng()){
-        return item.fromUserId;
-       }
-       return item.fromUserId;
-     })
+     }).populate("fromUserId", "firstName lastName").populate("toUserId", "firstName lastName")
+     console.log(connectionRequest)
+     const data = connectionRequest.map((row) => {
+      if (row.fromUserId._id.toString() === loggedinuser._id.toString()) {
+        return row.toUserId;
+      }
+      return row.fromUserId;
+    });
     
 
      res.send(data);
